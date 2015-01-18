@@ -93,7 +93,7 @@
             total = sections.length,
             status = "off",
             topPos = 0,
-            lastAnimation = 0,
+            lastAnimation = settings.loadedAt || 0,
             quietPeriod = 500,
             paginationList = "";
 
@@ -158,6 +158,15 @@
                 if (settings.loop === true) {
                     pos = ((total - 1) * 100) * -1;
                     next = $(settings.sectionContainer + "[data-index='" + total + "']");
+                } else if (index == 1) {
+                  // scroll up out of the onepage part and destroy it
+                  $('html, body').animate({
+                    scrollTop : $(window).scrollTop() - $('body').height() - 100 
+                  }, 800, function() {
+                    el.destroy_onepage_scroll({sectionContainer: settings.sectionContainer})
+                  }
+                  );
+                  return
                 } else {
                     return;
                 }
@@ -272,7 +281,7 @@
 
         // Create Pagination and Display Them
         if (settings.pagination === true) {
-            $("<ul class='onepage-pagination'>" + paginationList + "</ul>").prependTo("body");
+            $("<div class='onepage-pagination-wrapper'><ul class='onepage-pagination'>" + paginationList + "</ul></div>").prependTo("body");
             posTop = (el.find(".onepage-pagination").height() / 2) * -1;
             el.find(".onepage-pagination").css("margin-top", posTop);
         }
@@ -373,7 +382,7 @@
         el.swipeEvents().unbind("swipeDown swipeUp touchstart touchmove");
         $("body").removeClass("disabled-onepage-scroll");
         $('.onepage-pagination li a').unbind('click');
-        $('ul.onepage-pagination').remove();
+        $('div.onepage-pagination-wrapper').remove();
 
         var classListOnBody = $('body').attr('class').split(/\s+/);
         $.each(classListOnBody, function (index, item) {
@@ -382,7 +391,7 @@
             }
         });
 
-        $(document).unbind('mousewheel DOMMouseScroll');
+        $(document).unbind('mousewheel DOMMouseScroll MozMousePixelScroll');
         $(window).unbind('resize');
         $(document).unbind('keydown');
     };
